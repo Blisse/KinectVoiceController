@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Documents;
 using KinectMusicControl.KinectServices;
+using KinectMusicControl.Models.Kinect;
 using Microsoft.Kinect;
 using Microsoft.Speech.AudioFormat;
 using Microsoft.Speech.Recognition;
@@ -16,7 +17,7 @@ namespace KinectMusicControl.Services
 {
     public interface IKinectSpeechEngineService
     {
-        KinectServiceResult InitializeKinectSensor();
+        KinectServiceResult InitializeKinectSensor(IEnumerable<KinectGrammarPhraseKeyValue> grammarPhrases = null);
 
         void DisposeKinectSensor();
 
@@ -37,8 +38,22 @@ namespace KinectMusicControl.Services
         private KinectSensor _kinectSensor;
         private SpeechRecognitionEngine _speechRecognitionEngine;
         private KinectAudioStream _kinectAudioStream;
+        private static readonly List<KinectGrammarPhraseKeyValue> DefaultPhrases;
 
-        private const double ConfidenceThreshold = 0.6;
+        private const double ConfidenceThreshold = 0.7;
+
+        static KinectSpeechEngineService()
+        {
+            DefaultPhrases = new List<KinectGrammarPhraseKeyValue>();
+            DefaultPhrases.Add(new KinectGrammarPhraseKeyValue("play song", "PLAY"));
+            DefaultPhrases.Add(new KinectGrammarPhraseKeyValue("pause song", "PAUSE"));
+            DefaultPhrases.Add(new KinectGrammarPhraseKeyValue("stop song", "STOP"));
+            DefaultPhrases.Add(new KinectGrammarPhraseKeyValue("next song", "NEXT"));
+            DefaultPhrases.Add(new KinectGrammarPhraseKeyValue("previous song", "PREVIOUS"));
+            DefaultPhrases.Add(new KinectGrammarPhraseKeyValue("volume up", "VOLUME_UP"));
+            DefaultPhrases.Add(new KinectGrammarPhraseKeyValue("volume down", "VOLUME_DOWN"));
+            DefaultPhrases.Add(new KinectGrammarPhraseKeyValue("mute", "MUTE"));
+        }
 
         /// <summary>
         /// Gets the metadata for the speech recognizer (acoustic model) most suitable to
@@ -75,8 +90,9 @@ namespace KinectMusicControl.Services
             return null;
         }
 
-        private Grammar GetGrammar()
+        private Grammar GetGrammar(RecognizerInfo recognizerInfo, IEnumerable<KinectGrammarPhraseKeyValue> phrases)
         {
+
             /****************************************************************
             * 
             * Use this code to create grammar programmatically rather than from
@@ -92,7 +108,7 @@ namespace KinectMusicControl.Services
             * directions.Add(new SemanticResultValue("turn left", "LEFT"));
             * directions.Add(new SemanticResultValue("turn right", "RIGHT"));
             *
-            * var gb = new GrammarBuilder { Culture = ri.Culture };
+            * var gb = new GrammarBuilder { Culture = recognizerInfo.Culture };
             * gb.Append(directions);
             *
             * var g = new Grammar(gb);
@@ -100,11 +116,26 @@ namespace KinectMusicControl.Services
             ****************************************************************/
 
             // Create a grammar from grammar definition XML file.
-            using (var memoryStream = new MemoryStream(Encoding.ASCII.GetBytes(Properties.Resources.SpeechGrammar)))
+            /*
+             * using (var memoryStream = new MemoryStream(Encoding.ASCII.GetBytes(Properties.Resources.SpeechGrammar)))
             {
                 var g = new Grammar(memoryStream);
                 return g;
             }
+             */
+
+            Choices choices = new Choices();
+            foreach (var phrase in phrases ?? DefaultPhrases)
+            {
+                choices.Add(phrase.Key, phrase.Value);
+            }
+
+            var grammarBuilder = new GrammarBuilder { Culture = recognizerInfo.Culture };
+            grammarBuilder.Append(choices);
+            
+            var grammar = new Grammar(grammarBuilder);
+
+            return grammar;
         }
 
         private KinectAudioStream GetAudioStream(KinectSensor kinectSensor)
@@ -122,7 +153,7 @@ namespace KinectMusicControl.Services
             return null;
         }
 
-        public KinectServiceResult InitializeKinectSensor()
+        public KinectServiceResult InitializeKinectSensor(IEnumerable<KinectGrammarPhraseKeyValue> grammarPhrases = null)
         {
             DisposeKinectSensor();
 
@@ -148,7 +179,7 @@ namespace KinectMusicControl.Services
             }
 
             _speechRecognitionEngine = new SpeechRecognitionEngine(recognizerInfo.Id);
-            _speechRecognitionEngine.LoadGrammar(GetGrammar());
+            _speechRecognitionEngine.LoadGrammar(GetGrammar(recognizerInfo, grammarPhrases));
 
             _speechRecognitionEngine.SpeechRecognized += SpeechRecognized;
             _speechRecognitionEngine.SpeechRecognitionRejected += SpeechRejected;
@@ -202,7 +233,7 @@ namespace KinectMusicControl.Services
 
             if (e.Result.Confidence >= ConfidenceThreshold)
             {
-                String semanticResult = e.Result.Semantics.Value.ToString();
+                String semanticResult = e.Result.Text ?? e.Result.Semantics.Value.ToString();
 
                 var handler = SpeechRecognizedHandler;
                 if (handler != null)
@@ -222,7 +253,7 @@ namespace KinectMusicControl.Services
             var handler = SpeechRejectedHandler;
             if (handler != null)
             {
-                handler(this, e.Result.Text);
+                handler(this, e.Result.Text ?? e.Result.Semantics.Value.ToString());
             }
         }
 

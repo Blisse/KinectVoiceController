@@ -112,6 +112,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="KinectServices\KinectAudioStream.cs" />
+    <Compile Include="Models\Kinect\KinectGrammarPhraseKeyValue.cs" />
     <Compile Include="Services\KinectSpeechEngineService.cs" />
     <Compile Include="Services\MediaService.cs" />
     <Compile Include="ViewModels\MainWindowViewModel.cs" />
