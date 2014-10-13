@@ -1,0 +1,36 @@
+﻿<Window x:Class="KinectMusicControl.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Speech Basics" Height="600" Width="640"
+        Loaded="WindowLoaded" Closing="WindowClosing"
+        DataContext="{Binding Source={StaticResource Locator}, Path=MainWindow}">
+    
+    <Window.Resources>
+        <SolidColorBrush x:Key="RecognizedGreenBrush" Color="#00C176"/>
+        <SolidColorBrush x:Key="RejectedRedBrush" Color="#FF003C"/>
+        <SolidColorBrush x:Key="GrayBrush" Color="#AAAAAA"/>
+    </Window.Resources>
+    
+    <Grid Margin="10 0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="4*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0" Background="{StaticResource RecognizedGreenBrush}" Visibility="{Binding RecognizedSpeech, Converter={StaticResource StringToVisibilityConverter}}">
+            <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0 10 0 10" 
+                   Foreground="White" FontSize="40" 
+                   Text="{Binding RecognizedSpeech}"/>
+        </Grid>
+        <Grid Grid.Row="1" Background="{StaticResource GrayBrush}" Visibility="{Binding CurrentlyPlayingSong, Converter={StaticResource StringToVisibilityConverter}}">
+            <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0 10 0 10" 
+                   Foreground="White" FontSize="14" 
+                   Text="{Binding CurrentlyPlayingSong}"/>
+        </Grid>
+        <Grid Grid.Row="2" Background="{StaticResource RejectedRedBrush}" Visibility="{Binding RejectedSpeech, Converter={StaticResource StringToVisibilityConverter}}">
+            <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0 10 0 10" 
+                   Foreground="White" FontSize="40" 
+                   Text="{Binding RejectedSpeech}"/>
+        </Grid>
+    </Grid>
+</Window>

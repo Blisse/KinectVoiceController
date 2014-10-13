@@ -1,0 +1,55 @@
+﻿<grammar version="1.0" xml:lang="en-US" root="rootRule" tag-format="semantics/1.0-literals" xmlns="http://www.w3.org/2001/06/grammar">
+  <rule id="rootRule">
+    <one-of>
+      <item>
+        <tag>PLAY</tag>
+        <one-of>
+          <item>"play song"</item>
+          <item>"start playing"</item>
+        </one-of>
+      </item>
+      <item>
+        <tag>PAUSE</tag>
+        <one-of>
+          <item>"pause song"</item>
+        </one-of>
+      </item>
+      <item>
+        <tag>STOP</tag>
+        <one-of>
+          <item>"stop playing"</item>
+        </one-of>
+      </item>
+      <item>
+        <tag>NEXT</tag>
+        <one-of>
+          <item>"next song"</item>
+        </one-of>
+      </item>
+      <item>
+        <tag>PREVIOUS</tag>
+        <one-of>
+          <item>"previous song"</item>
+        </one-of>
+      </item>
+      <item>
+        <tag>MUTE</tag>
+        <one-of>
+          <item>"mute song"</item>
+        </one-of>
+      </item>
+      <item>
+        <tag>VOLUME_UP</tag>
+        <one-of>
+          <item>"volume up"</item>
+        </one-of>
+      </item>
+      <item>
+        <tag>VOLUME_DOWN</tag>
+        <one-of>
+          <item>"volume down"</item>
+        </one-of>
+      </item>
+    </one-of>
+  </rule>
+</grammar>
